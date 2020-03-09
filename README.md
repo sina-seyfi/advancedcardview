@@ -17,7 +17,6 @@ With this library you can implement designs like images below very easily:
 ![Demo](/screens/screen_demo.png)
 
 # Import
-AdvancedCardView implemented in kotlin languages, so be sure to add kotlin classpath to your root project `gradle.build`.
 First add this line to your project gradle file:
 ```groovy
 allprojects {
@@ -29,7 +28,7 @@ allprojects {
 ```
 And you need to add gradle dependency:
 ```groovy
-implementation 'com.github.sina-seyfi.AdvancedCardView:advancedcardview:1.0.0'
+    implementation 'com.github.sina-seyfi:AdvancedCardView:1.0.0'
 ```
 
 # Usage
