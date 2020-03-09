@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="AdvancedCardView">
+        <attr name="background_Type" format="enum">
+            <enum name="fill" value="0"/>
+            <enum name="stroke" value="1"/>
+            <enum name="fill_stroke" value="2"/>
+        </attr>
+        <attr name="background_ColorType" format="enum">
+            <enum name="solid" value="0"/>
+            <enum name="gradient_linear" value="1"/>
+            <enum name="gradient_radial" value="2"/>
+            <enum name="gradient_sweep" value="3"/>
+        </attr>
+        <attr name="background_Color" format="color"/>
+<!--        <attr name="background_Src" format="reference"/>-->
+        <attr name="background_Gradient_Color0" format="color"/>
+        <attr name="background_Gradient_Color1" format="color"/>
+        <attr name="background_Gradient_Color2" format="color"/>
+        <attr name="background_Gradient_Color3" format="color"/>
+        <attr name="background_Gradient_Color4" format="color"/>
+        <attr name="background_Gradient_Color5" format="color"/>
+        <attr name="background_Gradient_Color6" format="color"/>
+        <attr name="background_Gradient_ColorEnd" format="color"/>
+        <attr name="background_Gradient_Angle" format="float"/>
+        <attr name="background_Gradient_OffCenter_X" format="float"/>
+        <attr name="background_Gradient_OffCenter_Y" format="float"/>
+<!--        <attr name="background_Gradient_Radius_Multiplier" format="float"/>-->
+<!--        <attr name="background_Gradient_Radius" format="dimension"/>-->
+        <attr name="background_Alpha" format="float"/>
+        <attr name="stroke_Type" format="enum">
+            <enum name="solid" value="0"/>
+            <enum name="dash" value="1"/>
+        </attr>
+        <attr name="stroke_ColorType" format="enum">
+            <enum name="solid" value="0"/>
+            <enum name="gradient_linear" value="1"/>
+            <enum name="gradient_sweep" value="3"/>
+        </attr>
+        <attr name="stroke_Color" format="color"/>
+        <attr name="stroke_Gradient_Color0" format="color"/>
+        <attr name="stroke_Gradient_Color1" format="color"/>
+        <attr name="stroke_Gradient_Color2" format="color"/>
+        <attr name="stroke_Gradient_Color3" format="color"/>
+        <attr name="stroke_Gradient_Color4" format="color"/>
+        <attr name="stroke_Gradient_Color5" format="color"/>
+        <attr name="stroke_Gradient_Color6" format="color"/>
+        <attr name="stroke_Gradient_ColorEnd" format="color"/>
+        <attr name="stroke_Gradient_Angle" format="float"/>
+        <attr name="stroke_Gradient_OffCenter_X" format="float"/>
+        <attr name="stroke_Gradient_OffCenter_Y" format="float"/>
+        <attr name="stroke_Alpha" format="float"/>
+        <attr name="stroke_Width" format="dimension"/>
+        <attr name="stroke_DashSize" format="dimension"/>
+        <attr name="stroke_GapSize" format="dimension"/>
+        <attr name="stroke_CapType" format="enum">
+            <enum name="square" value="0"/>
+            <enum name="butt" value="1"/>
+            <enum name="round" value="2"/>
+        </attr>
+        <attr name="shadow0_Outer_Color" format="color"/>
+        <attr name="shadow0_Outer_Alpha" format="float"/>
+        <attr name="shadow0_Outer_Distance" format="dimension"/>
+        <attr name="shadow0_Outer_Blur" format="dimension"/>
+        <attr name="shadow0_Outer_Angle" format="float"/>
+        <attr name="shadow1_Outer_Color" format="color"/>
+        <attr name="shadow1_Outer_Alpha" format="float"/>
+        <attr name="shadow1_Outer_Distance" format="dimension"/>
+        <attr name="shadow1_Outer_Blur" format="dimension"/>
+        <attr name="shadow1_Outer_Angle" format="float"/>
+        <attr name="shadow0_Inner_Color" format="color"/>
+        <attr name="shadow0_Inner_Alpha" format="float"/>
+        <attr name="shadow0_Inner_Distance" format="dimension"/>
+        <attr name="shadow0_Inner_Blur" format="dimension"/>
+        <attr name="shadow0_Inner_Angle" format="float"/>
+        <attr name="shadow1_Inner_Color" format="color"/>
+        <attr name="shadow1_Inner_Alpha" format="float"/>
+        <attr name="shadow1_Inner_Distance" format="dimension"/>
+        <attr name="shadow1_Inner_Blur" format="dimension"/>
+        <attr name="shadow1_Inner_Angle" format="float"/>
+        <attr name="shadow_Outer_Area" format="dimension"/>
+        <attr name="corner_Type" format="enum">
+            <enum name="custom" value="0"/>
+            <enum name="rectangular" value="1"/>
+            <enum name="circular" value="2"/>
+            <enum name="third" value="3"/>
+            <enum name="quarter" value="4"/>
+        </attr>
+        <attr name="cornerRadius_TopLeft" format="dimension"/>
+        <attr name="cornerRadius_TopRight" format="dimension"/>
+        <attr name="cornerRadius_BottomLeft" format="dimension"/>
+        <attr name="cornerRadius_BottomRight" format="dimension"/>
+        <attr name="cornerRadius" format="dimension"/>
+    </declare-styleable>
+
+</resources>

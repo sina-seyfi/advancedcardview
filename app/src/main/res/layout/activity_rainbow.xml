@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RainbowActivity">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/rainbow"
+        android:layout_marginBottom="32dp"
+        android:text="Click to Make Rotation"
+        android:layout_marginTop="120dp"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:textColor="#404040"/>
+    
+    <com.sinaseyfi.advancedcardview.AdvancedCardView
+        android:id="@+id/rainbow"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.4"
+        app:cornerRadius="8dp"
+        app:background_Type="stroke"
+        app:stroke_Width="2dp"
+        app:stroke_ColorType="gradient_sweep" />
+    
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/rotate_it"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/rainbow"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="32dp"
+        android:text="Rotate"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

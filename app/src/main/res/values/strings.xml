@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AdvancedCardViewSample</string>
+    <string-array name="list_items_title">
+        <item>A Hole In Your Screen!!</item>
+        <item>Lift It Uppp!!</item>
+        <item>Rainbow Box</item>
+    </string-array>
+</resources>

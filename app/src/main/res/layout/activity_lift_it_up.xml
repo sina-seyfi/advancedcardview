@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LiftItUpActivity"
+    android:background="#EFEFEF">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/card"
+        android:layout_marginBottom="32dp"
+        android:text="Set Lift Amount"
+        android:layout_marginTop="120dp"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textColor="#404040"/>
+    
+    <com.sinaseyfi.advancedcardview.AdvancedCardView
+        android:id="@+id/card"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.35"
+        android:layout_width="200dp"
+        android:layout_height="240dp"
+        app:background_Type="fill"
+        app:background_Color="#EFEFEF"
+        app:cornerRadius="16dp"
+        app:shadow0_Outer_Distance="0dp"
+        app:shadow0_Outer_Alpha="0.16"
+        app:shadow0_Outer_Blur="0dp"
+        app:shadow0_Outer_Angle="0"
+        app:shadow0_Inner_Distance="0dp"
+        app:shadow0_Inner_Alpha="0"
+        app:shadow0_Inner_Blur="8dp"
+        app:shadow0_Inner_Angle="0"
+        app:shadow_Outer_Area="16dp"/>
+    
+    <androidx.appcompat.widget.AppCompatSeekBar
+        android:id="@+id/lift_amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="120dp"
+        android:layout_marginLeft="64dp"
+        android:layout_marginRight="64dp"
+        android:max="200"
+        android:progress="100"
+        android:thumbTint="@color/colorPrimary"
+        android:progressTint="@color/colorPrimary"/>
+    
+    <androidx.appcompat.widget.AppCompatTextView
+        app:layout_constraintLeft_toLeftOf="@id/lift_amount"
+        app:layout_constraintBottom_toTopOf="@id/lift_amount"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="-16"
+        android:textSize="14sp"
+        android:alpha="0.5"
+        android:textColor="@color/colorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        app:layout_constraintLeft_toLeftOf="@id/lift_amount"
+        app:layout_constraintBottom_toTopOf="@id/lift_amount"
+        app:layout_constraintRight_toRightOf="@id/lift_amount"
+        android:layout_marginBottom="8dp"
+        android:text="0"
+        android:textSize="14sp"
+        android:alpha="0.5"
+        android:textColor="@color/colorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        app:layout_constraintBottom_toTopOf="@id/lift_amount"
+        app:layout_constraintRight_toRightOf="@id/lift_amount"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="16dp"
+        android:text="+16"
+        android:textSize="14sp"
+        android:alpha="0.5"
+        android:textColor="@color/colorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
