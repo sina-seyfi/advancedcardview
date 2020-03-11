@@ -9,9 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".RainbowActivity"
-            android:label="Rotate It !">
-        </activity>
+        <activity android:name=".SomeCardsActivity"></activity>
+        <activity
+            android:name=".RainbowActivity"
+            android:label="Rotate It !"></activity>
         <activity
             android:name=".LiftItUpActivity"
             android:label="Lift It Up!!" />

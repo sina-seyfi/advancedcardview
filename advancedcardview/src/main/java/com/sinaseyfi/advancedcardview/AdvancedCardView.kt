@@ -128,6 +128,7 @@ class AdvancedCardView: FrameLayout {
     private var stroke_Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var stroke_Mask = Path()
     private var stroke_Path = Path()
+    private var no_Stroke_Path = Path()
     var stroke_Alpha: Float = NOT_DEFINED_ALPHA
         set(value) {
             field = floatPercentCheck(value)
@@ -471,6 +472,11 @@ class AdvancedCardView: FrameLayout {
         stroke_Mask.fillType = Path.FillType.EVEN_ODD
     }
 
+    private fun initNoStrokePath() {
+        no_Stroke_Path.reset()
+        addNoStrokeAreaRectF(no_Stroke_Path)
+    }
+
     private fun initBackgroundGradientColors() {
         background_Gradient_Colors = getColorArray(background_Gradient_Colors_Xml, background_Alpha)
     }
@@ -595,12 +601,16 @@ class AdvancedCardView: FrameLayout {
         return alpha / 255f
     }
 
+    private fun angleToRadians(angle: Float): Double {
+        return Math.toRadians(angle.toDouble())
+    }
+
     private fun getDx(distance: Float, angle: Float): Float {
-        return (distance * sin(Math.toRadians(angle.toDouble()))).toFloat()
+        return (distance * sin(angleToRadians(angle))).toFloat()
     }
 
     private fun getDy(distance: Float, angle: Float): Float {
-        return (distance * cos(Math.toRadians(angle.toDouble()))).toFloat()
+        return (distance * cos(angleToRadians(angle))).toFloat()
     }
 
     private fun getDiameter(x: Float, y: Float): Float {
@@ -618,7 +628,7 @@ class AdvancedCardView: FrameLayout {
     private fun getSweepShader(colorArray: IntArray, angle: Float, offCenterX: Float, offCenterY: Float): SweepGradient {
         val sweepGradient = SweepGradient(getCenterX(offCenterX), getCenterY(offCenterY), colorArray, null)
         val matrix = Matrix()
-        matrix.postRotate(angle, getCenterX(offCenterX), getCenterY(offCenterY))
+        matrix.postRotate(angle - 90, getCenterX(offCenterX), getCenterY(offCenterY))
         sweepGradient.setLocalMatrix(matrix)
         return sweepGradient
     }
@@ -745,6 +755,11 @@ class AdvancedCardView: FrameLayout {
     private fun getStrokePaint(): Paint {
         initStrokePaint()
         return stroke_Paint
+    }
+
+    private fun getNoStrokePath(): Path {
+        initNoStrokePath()
+        return no_Stroke_Path
     }
 
     private fun isDashed(): Boolean {
@@ -1019,7 +1034,7 @@ class AdvancedCardView: FrameLayout {
     }
 
     override fun drawChild(canvas: Canvas?, child: View?, drawingTime: Long): Boolean {
-        canvas?.clipPath(getBackgroundPath())
+        canvas?.clipPath(getNoStrokePath())
         return super.drawChild(canvas, child, drawingTime)
     }
 

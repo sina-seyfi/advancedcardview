@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#2C2A2E"
+    tools:context=".SomeCardsActivity">
+    
+    <com.sinaseyfi.advancedcardview.AdvancedCardView
+        android:id="@+id/example_1"
+        android:layout_width="240dp"
+        android:layout_height="64dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:background_Type="stroke"
+        app:background_ColorType="gradient_linear"
+        app:background_Gradient_Color0="#A53AC3"
+        app:background_Gradient_ColorEnd="#8441AE"
+        app:background_Gradient_Angle="-80"
+        app:cornerRadius="8dp"
+        app:stroke_ColorType="gradient_sweep"
+        app:stroke_Gradient_Color0="#D32828"
+        app:stroke_Gradient_Color1="#F66D11"
+        app:stroke_Gradient_Color2="#CFCF19"
+        app:stroke_Gradient_Color3="#2ABA2A"
+        app:stroke_Gradient_Color4="#1DD5D5"
+        app:stroke_Gradient_Color5="#3838F8"
+        app:stroke_Gradient_Color6="#9225E1"
+        app:stroke_Gradient_Angle="180"
+        app:shadow0_Inner_Blur="16dp"
+        app:shadow0_Inner_Alpha="0.32"
+        app:shadow0_Inner_Color="#000000"
+        app:stroke_Width="2dp">
+        
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#2C2A2E"/>
+        
+    </com.sinaseyfi.advancedcardview.AdvancedCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
