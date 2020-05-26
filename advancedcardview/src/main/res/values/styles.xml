@@ -92,6 +92,9 @@
         <attr name="cornerRadius_BottomLeft" format="dimension"/>
         <attr name="cornerRadius_BottomRight" format="dimension"/>
         <attr name="cornerRadius" format="dimension"/>
+        <attr name="onTouched_Style" format="reference"/>
+        <attr name="onTouched_Animate" format="boolean"/>
+        <attr name="onTouched_Duration" format="integer"/>
     </declare-styleable>
 
 </resources>

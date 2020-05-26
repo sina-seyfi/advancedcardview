@@ -28,7 +28,7 @@ allprojects {
 ```
 And you need to add gradle dependency:
 ```groovy
-    implementation 'com.github.sina-seyfi:AdvancedCardView:1.0.0'
+    implementation 'com.github.sina-seyfi:AdvancedCardView:1.0.1'
 ```
 
 # Usage

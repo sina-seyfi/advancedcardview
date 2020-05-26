@@ -70,9 +70,9 @@ class RainbowActivity : AppCompatActivity() {
 
     private val rotateItListener = object: View.OnClickListener {
         override fun onClick(v: View?) {
-            val valueAnimator = ValueAnimator.ofFloat(0f, 360f * 3)
+            val valueAnimator = ValueAnimator.ofFloat(0f, 360f * 1)
             valueAnimator.apply {
-                duration = 2000
+                duration = 5000
             }
             valueAnimator.addUpdateListener {
                 rainbow.stroke_Gradient_Angle = it.animatedValue as Float

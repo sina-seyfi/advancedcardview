@@ -32,6 +32,7 @@ class ListAdapter(val context: Context): RecyclerView.Adapter<ListItem>() {
             1 -> intent.setClass(context, LiftItUpActivity::class.java)
             2 -> intent.setClass(context, RainbowActivity::class.java)
             3 -> intent.setClass(context, SomeCardsActivity::class.java)
+            4 -> intent.setClass(context, CalculatorActivity::class.java)
         }
         return intent
     }

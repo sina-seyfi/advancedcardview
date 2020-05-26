@@ -4,7 +4,9 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.View
+import android.widget.Checkable
 import android.widget.FrameLayout
 import androidx.core.view.setPadding
 import kotlin.math.*
@@ -35,6 +37,9 @@ class AdvancedCardView: FrameLayout {
         val NOT_DEFINED_RADIUS = -1f
         val NOT_DEFINED_SHADOW_OUTER_AREA = -1f
 //        val NOT_DEFINED_SOURCE = -1       // TODO Implement Background Image Support
+        val NOT_DEFINED_STYLE = -1
+        val NOT_DEFINED_ANIMATE = false
+        val DEFAULT_DURATION = 400L
     }
 
     // Constants that requires "resources"
@@ -80,7 +85,7 @@ class AdvancedCardView: FrameLayout {
         Inner
     }
 
-    private val DEBUG_MODE = false
+    private val DEBUG_MODE = true
     private val DEBUG_fill_color = Color.rgb(128, 128, 128)
     private val DEBUG_stroke_color = Color.rgb(0, 0, 255)
     private val DEBUG_stroke_width = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, resources.displayMetrics)
@@ -225,6 +230,10 @@ class AdvancedCardView: FrameLayout {
             field = value
             cornerUpdated()
         }
+
+    var onTouched_Style = NOT_DEFINED_STYLE
+    var onTouched_Animate = NOT_DEFINED_ANIMATE
+    var onTouched_Duration = DEFAULT_DURATION
 
     constructor(context: Context) : super(context) { initialize(context, null) }
 
@@ -385,86 +394,160 @@ class AdvancedCardView: FrameLayout {
         shadow.mask.fillType = Path.FillType.EVEN_ODD
     }
 
+    // Init shadow inner paint.
     private fun initShadowInnerPaint(shadow: ShadowObject) {
         shadow.paint.style = Paint.Style.FILL
         shadow.paint.color = Color.rgb(255, 255, 255)
         shadow.paint.setShadowLayer(shadow.blur, getDx(shadow.distance, -shadow.angle), getDy(shadow.distance, -shadow.angle), assignColorAlpha(shadow.color, shadow.alpha))
     }
 
+    // Init shadow inner path.
+    // We add external rectF and masking it with no stroke area rectF.
     private fun initShadowInnerPath(shadow: ShadowObject) {
         shadow.path.reset()
         addInnerShadowExternalRectF(shadow.path, -shadow.blur * 4)
         addNoStrokeAreaRectF(shadow.path)
-        shadow.path.fillType = Path.FillType.EVEN_ODD
+        shadow.path.fillType = Path.FillType.EVEN_ODD   // Even_Odd will cut out second added path.
     }
 
+    // Init shadow inner mask.
+    // For this mask we need no stroke area rectF.
     private fun initShadowInnerMask(shadow: ShadowObject) {
         shadow.mask.reset()
         addNoStrokeAreaRectF(shadow.mask)
     }
 
+    // Init background paint, style is fill.
     private fun initBackgroundPaint() {
         background_Paint.style = Paint.Style.FILL
         background_Paint.alpha = mapAlphaTo255(background_Alpha)
         background_Paint.color = background_Color
         when(background_ColorType) {
-            ColorType.Gradient_Linear -> background_Paint.shader = getLinearShader(background_Gradient_Colors, background_Gradient_Angle)
-            ColorType.Gradient_Radial -> background_Paint.shader = getRadialShader(background_Gradient_Colors, background_Gradient_OffCenter_X, background_Gradient_OffCenter_Y)
-            ColorType.Gradient_Sweep -> background_Paint.shader = getSweepShader(background_Gradient_Colors, background_Gradient_Angle, background_Gradient_OffCenter_X, background_Gradient_OffCenter_Y)
+            ColorType.Gradient_Linear -> background_Paint.shader = getLinearShader(
+                background_Gradient_Colors,
+                background_Gradient_Angle
+            )
+            ColorType.Gradient_Radial -> background_Paint.shader = getRadialShader(
+                background_Gradient_Colors,
+                background_Gradient_OffCenter_X,
+                background_Gradient_OffCenter_Y
+            )
+            ColorType.Gradient_Sweep -> background_Paint.shader = getSweepShader(
+                background_Gradient_Colors,
+                background_Gradient_Angle,
+                background_Gradient_OffCenter_X,
+                background_Gradient_OffCenter_Y
+            )
         }
     }
 
+    // Init stroke paint for dashed and non-dashed stroke path effect.
+    // If path effect is dashed, style will be stroke.
+    // else, style will be fill and we will use mask.
     private fun initStrokePaint() {
-        stroke_Paint.style = Paint.Style.FILL
-        stroke_Paint.alpha = mapAlphaTo255(stroke_Alpha)
-        stroke_Paint.color = stroke_Color
         if(isDashed()) {
             stroke_Paint.style = Paint.Style.STROKE
             stroke_Paint.pathEffect = DashPathEffect(floatArrayOf(stroke_DashSize, stroke_GapSize), 0f)
             stroke_Paint.strokeCap = getStrokeCap(stroke_CapType)
             stroke_Paint.strokeWidth = getStrokeWidth()
+        } else {
+            stroke_Paint.style = Paint.Style.FILL
+            stroke_Paint.alpha = mapAlphaTo255(stroke_Alpha)
+            stroke_Paint.color = stroke_Color
         }
         when(stroke_ColorType) {
-            ColorType.Gradient_Linear -> stroke_Paint.shader = getLinearShader(stroke_Gradient_Colors, stroke_Gradient_Angle)
-            ColorType.Gradient_Sweep -> stroke_Paint.shader = getSweepShader(stroke_Gradient_Colors, stroke_Gradient_Angle, stroke_Gradient_OffCenter_X, stroke_Gradient_OffCenter_Y)
+            ColorType.Gradient_Linear -> stroke_Paint.shader = getLinearShader(
+                stroke_Gradient_Colors,
+                stroke_Gradient_Angle
+            )
+            ColorType.Gradient_Sweep -> stroke_Paint.shader = getSweepShader(
+                stroke_Gradient_Colors,
+                stroke_Gradient_Angle,
+                stroke_Gradient_OffCenter_X,
+                stroke_Gradient_OffCenter_Y
+            )
         }
     }
 
+    // Init inner shadow external rectF radii
     private fun initInnerShadowExternalPathRadii(inset: Float) {
-        innerShadow_External_Path_Radii = getCornerRadii(getCornerRadius(), cornerRadius_TopLeft, cornerRadius_TopRight, cornerRadius_BottomRight, cornerRadius_BottomLeft, getStrokeWidth() + inset)
+        innerShadow_External_Path_Radii = getCornerRadii(
+            getCornerRadius(),
+            cornerRadius_TopLeft,
+            cornerRadius_TopRight,
+            cornerRadius_BottomRight,
+            cornerRadius_BottomLeft,
+            // Inset is always negative
+            // and is a factor of inner shadow blur.
+            getStrokeWidth() + inset
+        )
     }
 
+    // Init stroke path radii (to be used in non-dashed style)
     private fun initStrokeMaskRadii() {
         if(!stroke_Mask_Radii_Updated) {
-            stroke_Mask_Radii = getCornerRadii(getCornerRadius(), cornerRadius_TopLeft, cornerRadius_TopRight, cornerRadius_BottomRight, cornerRadius_BottomLeft, getStrokeWidth())
+            stroke_Mask_Radii = getCornerRadii(
+                getCornerRadius(),
+                cornerRadius_TopLeft,
+                cornerRadius_TopRight,
+                cornerRadius_BottomRight,
+                cornerRadius_BottomLeft,
+                // We ignore stroke part, so we inset all stroke width
+                // Because we want to use this as cut out.
+                getStrokeWidth()
+            )
             stroke_Mask_Radii_Updated = true
         }
     }
 
+    // Init stroke path radii (to be used in dashed style)
     private fun initStrokePathRadii() {
         if(!stroke_Path_Radii_Updated) {
-            stroke_Path_Radii = getCornerRadii(getCornerRadius(), cornerRadius_TopLeft, cornerRadius_TopRight, cornerRadius_BottomRight, cornerRadius_BottomLeft, getStrokeWidth() / 2)
+            stroke_Path_Radii = getCornerRadii(
+                getCornerRadius(),
+                cornerRadius_TopLeft,
+                cornerRadius_TopRight,
+                cornerRadius_BottomRight,
+                cornerRadius_BottomLeft,
+                // Half of stroke width for inset because stroke is drawn on path
+                getStrokeWidth() / 2
+            )
             stroke_Path_Radii_Updated = true
         }
     }
 
+    // Init background corner radii.
     private fun initBackgroundCornerRadii() {
         if(!background_Path_Radii_Updated) {
-            background_Path_Radii = getCornerRadii(getCornerRadius(), cornerRadius_TopLeft, cornerRadius_TopRight, cornerRadius_BottomRight, cornerRadius_BottomLeft, 0f)
+            background_Path_Radii = getCornerRadii(
+                getCornerRadius(),
+                cornerRadius_TopLeft,
+                cornerRadius_TopRight,
+                cornerRadius_BottomRight,
+                cornerRadius_BottomLeft,
+                // We don't need any inset
+                0f
+            )
             background_Path_Radii_Updated = true
         }
     }
 
+    // Init background path
+    // Adds background rectF.
     private fun initBackgroundPath() {
         background_Path.reset()
         addBackgroundRectF(background_Path)
     }
 
+    // Init stroke path for dashed stroke style.
+    // Adds stroke path rectF.
     private fun initStrokePath() {
         stroke_Path.reset()
         addStrokePath(stroke_Path)
     }
 
+    // Init stroke mask for non-dashed stroke style.
+    // Adds background rectF and cuts it by no stroke rectF.
     private fun initStrokeMask() {
         stroke_Mask.reset()
         addBackgroundRectF(stroke_Mask)
@@ -472,29 +555,27 @@ class AdvancedCardView: FrameLayout {
         stroke_Mask.fillType = Path.FillType.EVEN_ODD
     }
 
+    // Init no stroke area path.
+    // Will be used to clip children of this container.
     private fun initNoStrokePath() {
         no_Stroke_Path.reset()
         addNoStrokeAreaRectF(no_Stroke_Path)
     }
 
+    // Assign alpha to background gradient colors
     private fun initBackgroundGradientColors() {
         background_Gradient_Colors = getColorArray(background_Gradient_Colors_Xml, background_Alpha)
     }
 
+    // Assign alpha to stroke gradient colors
     private fun initStrokeGradientColors() {
         stroke_Gradient_Colors = getColorArray(stroke_Gradient_Colors_Xml, stroke_Alpha)
     }
 
-    private fun getCornerRadius(): Float {
-        return when(cornerType) {
-            CornerType.Custom -> cornerRadius_
-            CornerType.Rectangular -> 0f
-            CornerType.Circular -> min(getActualWidth(), getActualHeight()) / 2
-            CornerType.Third -> min(getActualWidth(), getActualHeight()) / 3
-            CornerType.Quarter -> min(getActualWidth(), getActualHeight()) / 4
-        }
-    }
-
+    // Assign inset to corner radii.
+    // Positive inset will make corners less curve (because boundaries are smaller)
+    // Negative inset will make corners more curve (because boundaries are larger)
+    // Also check if individual corner radius is set.
     private fun getCornerRadii(radius: Float, topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float, inset: Float): FloatArray {
         val cornerRadius = if(radius == NOT_DEFINED_CORNER_RADIUS) DEFAULT_CORNER_RADIUS else dimenCheck(radius - inset, null)
         val cornerRadiusTopLeft = if(topLeft == NOT_DEFINED_CORNER_RADIUS) cornerRadius else dimenCheck(topLeft - inset, null)
@@ -502,17 +583,19 @@ class AdvancedCardView: FrameLayout {
         val cornerRadiusBottomRight = if(bottomRight == NOT_DEFINED_CORNER_RADIUS) cornerRadius else dimenCheck(bottomRight - inset, null)
         val cornerRadiusBottomLeft = if(bottomLeft == NOT_DEFINED_CORNER_RADIUS) cornerRadius else dimenCheck(bottomLeft - inset, null)
         return floatArrayOf(
-            cornerRadiusTopLeft,
-            cornerRadiusTopLeft,
-            cornerRadiusTopRight,
-            cornerRadiusTopRight,
-            cornerRadiusBottomRight,
-            cornerRadiusBottomRight,
-            cornerRadiusBottomLeft,
-            cornerRadiusBottomLeft
+            cornerRadiusTopLeft, cornerRadiusTopLeft,
+            cornerRadiusTopRight, cornerRadiusTopRight,
+            cornerRadiusBottomRight, cornerRadiusBottomRight,
+            cornerRadiusBottomLeft, cornerRadiusBottomLeft
         )
     }
 
+    // Normalize color array that is send from xml,
+    // It will append color in series, for example if
+    // only colors of 3, 5, 6 is provided, it will map
+    // these color indexes, to 0, 1, 2.
+    // It will append first color in array, if last color is not defined.
+    // It will set default color values, if no colors are defined.
     private fun getColorArray(colors: IntArray, alpha: Float): IntArray {
         var colorArray = ArrayList<Int>()
         for(c in colors)
@@ -529,6 +612,9 @@ class AdvancedCardView: FrameLayout {
         return colorArray.toIntArray()
     }
 
+    // Assign alpha to color even if the color has its own alpha.
+    // For example if the color has alpha of 0.5, assigning the
+    // alpha of 0.5 to it, will make the result color alpha to be 0.5 * 0.5 = 0.25
     private fun assignColorAlpha(color: Int, alpha: Float): Int {
         return Color.argb(
             mapAlphaTo255(
@@ -540,6 +626,19 @@ class AdvancedCardView: FrameLayout {
         )
     }
 
+    // It automates corner radius.
+    private fun getCornerRadius(): Float {
+        return when(cornerType) {
+            CornerType.Custom -> cornerRadius_
+            CornerType.Rectangular -> 0f
+            CornerType.Circular -> min(getActualWidth(), getActualHeight()) / 2
+            CornerType.Third -> min(getActualWidth(), getActualHeight()) / 3
+            CornerType.Quarter -> min(getActualWidth(), getActualHeight()) / 4
+        }
+    }
+
+    // Check dimen to be not negative.
+    // Allowed dimen is used when we want dimen to be negative (For example, when we not set it)
     private fun dimenCheck(dimen: Float, allowedDimen: Float?): Float {
         if(allowedDimen != null)
             if(dimen == allowedDimen)
@@ -550,34 +649,99 @@ class AdvancedCardView: FrameLayout {
             0f
     }
 
+    // Helper function that calculates left, top, right, bottom values base on inputs
+    // and creates the RectF
     private fun getRectF(width: Float, height: Float, inset: Float): RectF {
         return RectF(0f + inset, 0f + inset, width - inset, height - inset)
     }
 
+    // Create inset background path rectF
     private fun addBackgroundRectF(path: Path) {
-        path.addRoundRect(getRectF(measuredWidth.toFloat(), measuredHeight.toFloat(), getShadowOuterArea()), getBackgroundPathRadii(), Path.Direction.CW)
+        path.addRoundRect(
+            getRectF(
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                getShadowOuterArea()
+            ),
+            getBackgroundPathRadii(),
+            Path.Direction.CW
+        )
     }
 
+    // Outer shadow is drawn between actual boundary (view boundary)
+    // and the inset boundary. So if we have stroke type background color,
+    // we don't want outer shadow to draw inside stroked path (because path is a cut out path)
+    // so we need to mask outer shadow drawing to only draw outside inset boundary:
     private fun addBackgroundOuterShadowMaskRectF(path: Path) {
-        path.addRoundRect(getRectF(measuredWidth.toFloat(), measuredHeight.toFloat(), getShadowOuterArea() - SHADOW_OUTER_MASK_ERROR), getBackgroundPathRadii(), Path.Direction.CW)
+        path.addRoundRect(
+            getRectF(
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                getShadowOuterArea() - SHADOW_OUTER_MASK_ERROR
+            ),
+            getBackgroundPathRadii(),
+            Path.Direction.CW
+        )
     }
 
+    // This function is used when we have dashed type stroke.
+    // As the stroke type drawing, draws stroke on path,
+    // So we need to create rectF smaller by half of stroke width.
     private fun addStrokePath(path: Path) {
-        path.addRoundRect(getRectF(measuredWidth.toFloat(), measuredHeight.toFloat(), getShadowOuterArea() + getStrokeWidth() / 2), getStrokePathRadii(), Path.Direction.CW)
+        path.addRoundRect(
+            getRectF(
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                getShadowOuterArea() + getStrokeWidth() / 2     // because drawing is on path.
+            ),
+            getStrokePathRadii(),
+            Path.Direction.CW
+        )
     }
 
+    // Adds cut out rectF that is not include any stroke inside.
+    // This function will be used by stroke path initializer,
+    // and by inner shadow path initializer.
+    // both of these function, will use this rectF as cut out.
     private fun addNoStrokeAreaRectF(path: Path) {
-        path.addRoundRect(getRectF(measuredWidth.toFloat(), measuredHeight.toFloat(), getShadowOuterArea() + getStrokeWidth()), getStrokeMaskRadii(), Path.Direction.CW)
+        path.addRoundRect(
+            getRectF(
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                getShadowOuterArea() + getStrokeWidth()
+            ),
+            getStrokeMaskRadii(),
+            Path.Direction.CW
+        )
     }
 
+    // Adds boundary rectF without considering corner radii:
     private fun addBoundaryRectF(path: Path) {
-        path.addRect(getRectF(measuredWidth.toFloat(), measuredHeight.toFloat(), 0f), Path.Direction.CW)
+        path.addRect(
+            getRectF(
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                0f),
+            Path.Direction.CW
+        )
     }
 
+    // Inner shadow is a big rectF (even bigger than boundary rectF, if blur is too high)
+    // that the inside is cut out and empty, so when we draw outer shadow,
+    // it seems that it is a inner shadow. This function creates bigger and outer rectF:
     private fun addInnerShadowExternalRectF(path: Path, expand: Float) {
-        path.addRoundRect(getRectF(measuredWidth.toFloat(), measuredHeight.toFloat(), getShadowOuterArea() + expand), getInnerShadowExternalPathRadii(expand), Path.Direction.CW)
+        path.addRoundRect(
+            getRectF(
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                getShadowOuterArea() + expand
+            ),
+            getInnerShadowExternalPathRadii(expand),
+            Path.Direction.CW
+        )
     }
 
+    // Map angle to 0 - 360 range:
     private fun angleCheck(angle: Float): Float {
         return if(angle < 0)
             angleCheck(angle + 360)
@@ -585,6 +749,7 @@ class AdvancedCardView: FrameLayout {
             angle % 360
     }
 
+    // Checks if a float number is in 0 - 1 range and clamps it:
     private fun floatPercentCheck(alpha: Float): Float {
         return when {
             alpha < 0f -> 0f
@@ -593,30 +758,37 @@ class AdvancedCardView: FrameLayout {
         }
     }
 
+    // Maps alpha to 0 - 255 range:
     private fun mapAlphaTo255(alpha: Float): Int {
         return (floatPercentCheck(alpha) * 255).toInt()
     }
 
+    // Maps alpha to 0 - 1 range:
     private fun mapAlphaTo1(alpha: Int): Float {
         return alpha / 255f
     }
 
+    // Converts angle to radian:
     private fun angleToRadians(angle: Float): Double {
         return Math.toRadians(angle.toDouble())
     }
 
-    private fun getDx(distance: Float, angle: Float): Float {
-        return (distance * sin(angleToRadians(angle))).toFloat()
+    // Calculates dx base on angle and radius:
+    private fun getDx(radius: Float, angle: Float): Float {
+        return (radius * sin(angleToRadians(angle))).toFloat()
     }
 
-    private fun getDy(distance: Float, angle: Float): Float {
-        return (distance * cos(angleToRadians(angle))).toFloat()
+    // Calculates dy base on angle and radius:
+    private fun getDy(radius: Float, angle: Float): Float {
+        return (radius * cos(angleToRadians(angle))).toFloat()
     }
 
+    // Calculates diameter:
     private fun getDiameter(x: Float, y: Float): Float {
         return sqrt(x.pow(2) + y.pow(2))
     }
 
+    // Checks if a value is outside of both positive and negative boundary:
     private fun boundaryCheck(value: Float, boundary: Float): Float {
         val absValue = abs(value)
         val sign = (value / absValue).toInt()
@@ -625,6 +797,7 @@ class AdvancedCardView: FrameLayout {
     }
 
     // TODO( Create Rounded Sweep and Sudden Sweep Mode )
+    // Creates sweep shader:
     private fun getSweepShader(colorArray: IntArray, angle: Float, offCenterX: Float, offCenterY: Float): SweepGradient {
         val sweepGradient = SweepGradient(getCenterX(offCenterX), getCenterY(offCenterY), colorArray, null)
         val matrix = Matrix()
@@ -633,43 +806,62 @@ class AdvancedCardView: FrameLayout {
         return sweepGradient
     }
 
+    // Creates radial shader:
     private fun getRadialShader(colorArray: IntArray, offCenterX: Float, offCenterY: Float): RadialGradient {
         return RadialGradient(getCenterX(offCenterX), getCenterY(offCenterY), getShaderRadius(offCenterX, offCenterY), colorArray, null, Shader.TileMode.CLAMP)
     }
 
+    // Calculate offCenter value of X axis base on multiplier:
     private fun getCenterX(offCenter: Float): Float {
         val halfWidth = getActualWidth() / 2 + getShadowOuterArea()
         return halfWidth + offCenter * halfWidth
     }
 
+    // Calculate offCenter value of Y axis base on multiplier:
     private fun getCenterY(offCenter: Float): Float {
         val halfHeight = getActualHeight() / 2 + getShadowOuterArea()
         return halfHeight + offCenter * halfHeight
     }
 
+    // Calculate how much radial shader radius must be,
+    // to fill out entire boundary:
     private fun getShaderRadius(offCenterX: Float, offCenterY: Float): Float {
         val offCenter = getDiameter(offCenterX, offCenterY)
         val halfDiameter = getDiameter(getActualWidth(), getActualHeight()) / 2
         return halfDiameter + offCenter * halfDiameter
     }
 
+    // Creating linear shader that start and end point is on path:
     private fun getLinearShader(colorArray: IntArray, angle: Float): LinearGradient {
         val startPoint = getLinearGradientCircularStartPoint(angle)
         val endPoint = getLinearGradientCircularStartPoint(angle + 180)
         return LinearGradient(startPoint.first, startPoint.second, endPoint.first, endPoint.second, colorArray, null, Shader.TileMode.CLAMP)
     }
 
+    // Calculate position of linear gradient starting point,
+    // with considering each corner radius of shape.
+    // In this approach starting point of linear gradient,
+    // will fall on the path even on the curved corners.
+    // So when we have multiple colors in linear gradient,
+    // no colors will fall outside of path when corner is curved.
     private fun getLinearGradientCircularStartPoint(angle: Float): Pair<Float, Float> {
         val width = getActualWidth()
         val height = getActualHeight()
+        // These values will be used to calculate diameters:
         val halfWidth = width / 2
         val halfHeight = height / 2
+        // We need half diameter because we move from center of both X and Y axises:
         val halfDiameter = getDiameter(width, height) / 2
+        // Now we calculate how much we need to move from center.
         val dx = getDx(halfDiameter, angle)
         val dy = getDy(halfDiameter, angle)
+        // Because dx and dy are calculated by half diameter,
+        // if we don't have square, dx and dy will be,
+        // more than half width/height in some conditions,
+        // so we need to clamp values to maximum of half width/height:
         var x = halfWidth + boundaryCheck(dx, halfWidth)
-        var y = halfHeight + boundaryCheck(-dy, halfHeight)
-        // Make Coordinates of X and Y Circular Base on Corner Radius
+        var y = halfHeight + boundaryCheck(-dy, halfHeight) // -dy because y axis in android is upside down.
+        // Now We Make Coordinates of X and Y Circular Base on Corner Radius:
         val pathRadii = getBackgroundPathRadii()
         val CTR = pathRadii[2]      // Corner Top Right
         val CBR = pathRadii[4]      // Corner Bottom Right
@@ -704,30 +896,47 @@ class AdvancedCardView: FrameLayout {
         return Pair(x + getShadowOuterArea(), y + getShadowOuterArea())
     }
 
+    // Determine how much we traverse corner to calculate angle
+    // * * * * X * * *
+    //               *
+    //               *
+    //               *
+    //               *
+    //               *
+    //               *
+    // For example here we travel 5 unit in X axis, and there is 3 more left,
+    // And we didn't travel on y axis. So {max} travel on each axis is 8.
+    // And maximum travel angle is 90 degrees. and we traveled 5 + 0 / 8 + 8.
+    // So angle is 5 / 16 * 90 = 28.125 degree.
     private fun determineCornerCircularAngle(x: Float, y: Float, max: Float): Float {
-        return (((abs(x) + abs(y)) / (2 * abs(max))) * 90)
+        return ((abs(x) + abs(y)) / (2 * abs(max))) * 90f
     }
 
+    // Init background path radii and returns it.
     private fun getBackgroundPathRadii(): FloatArray {
         initBackgroundCornerRadii()
         return background_Path_Radii
     }
 
+    // Init stroke mask radii and returns it.
     private fun getStrokeMaskRadii(): FloatArray {
         initStrokeMaskRadii()
         return stroke_Mask_Radii
     }
 
+    // Init stroke path radii and returns it.
     private fun getStrokePathRadii(): FloatArray {
         initStrokePathRadii()
         return stroke_Path_Radii
     }
 
+    // Init inner shadow external path radii and returns it.
     private fun getInnerShadowExternalPathRadii(inset: Float): FloatArray {
         initInnerShadowExternalPathRadii(inset)
         return innerShadow_External_Path_Radii
     }
 
+    // Adapter for converting capType to Paint.Cap:
     private fun getStrokeCap(capType: CapType): Paint.Cap {
         return when(capType) {
             CapType.Butt -> Paint.Cap.BUTT
@@ -736,46 +945,59 @@ class AdvancedCardView: FrameLayout {
         }
     }
 
+    // It's the trigger for corner related mathematics
+    // to update themselves according to new values.
+    // It makes performance improvement to not calculate,
+    // if it is not changed.
     private fun cornerUpdated() {
         background_Path_Radii_Updated = false
         stroke_Path_Radii_Updated = false
         stroke_Mask_Radii_Updated = false
     }
 
+    // Init stroke path and returns it.
     private fun getStrokePath(): Path {
         initStrokePath()
         return stroke_Path
     }
 
+    // Init stroke mask and returns it.
     private fun getStrokeMask(): Path {
         initStrokeMask()
         return stroke_Mask
     }
 
+    // Init stroke paint and returns it.
     private fun getStrokePaint(): Paint {
         initStrokePaint()
         return stroke_Paint
     }
 
+    // Init no stroke path and returns it.
     private fun getNoStrokePath(): Path {
         initNoStrokePath()
         return no_Stroke_Path
     }
 
+    // If the stroke is dashed or not
     private fun isDashed(): Boolean {
         return stroke_Type == StrokeType.Dash
     }
 
+    // Init background path and returns it
     private fun getBackgroundPath(): Path {
         initBackgroundPath()
         return background_Path
     }
 
+    // Init background paint and returns it
     private fun getBackgroundPaint(): Paint {
         initBackgroundPaint()
         return background_Paint
     }
 
+    // It returns 0 if can not draw stroke
+    // (because of background color type)
     private fun getStrokeWidth(): Float {
         return if(canDrawStroke())
             stroke_Width
@@ -783,6 +1005,8 @@ class AdvancedCardView: FrameLayout {
             0f
     }
 
+    // Returns default shadow area size if it is not set,
+    // or the actual shadow are it it is set.
     private fun getShadowOuterArea(): Float {
         return if(shadow_Outer_Area == NOT_DEFINED_SHADOW_OUTER_AREA)
             0f
@@ -790,33 +1014,40 @@ class AdvancedCardView: FrameLayout {
             shadow_Outer_Area
     }
 
+    // Checks blur and sets it.
     private fun setShadowBlur(shadowIndex: Int, blur: Float) {
         shadows[shadowIndex].blur = dimenCheck(blur, null)
     }
 
+    // Checks distance and sets it.
     private fun setShadowDistance(shadowIndex: Int, distance: Float) {
         shadows[shadowIndex].distance = dimenCheck(distance, null)
     }
 
+    // Normalize alpha and sets it.
     private fun setShadowAlpha(shadowIndex: Int, alpha: Float) {
         shadows[shadowIndex].alpha = floatPercentCheck(alpha)
     }
 
+    // It sets the color
     private fun setShadowColor(shadowIndex: Int, color: Int) {
         shadows[shadowIndex].color = color
     }
 
+    // Checks the angle and sets it.
     private fun setShadowAngle(shadowIndex: Int, angle: Float) {
         shadows[shadowIndex].angle = angleCheck(angle)
     }
 
+    // We have array of four shadows,
+    // first two are outer shadows,
+    // second two are inner shadows,
+    // And this function maps raw index (0 or 1) to appropriate shadow index.
     private fun mapShadowIndex(shadowType: ShadowType, shadowIndex: Int): Int? {
-        if(shadowType == ShadowType.Outer)
-            return shadowIndex
-        else if(shadowType == ShadowType.Inner)
-            return shadowIndex + 2
-        else
-            return null
+        return when (shadowType) {
+            ShadowType.Outer -> shadowIndex
+            ShadowType.Inner -> shadowIndex + 2
+        }
     }
 
     // Preparing Area
@@ -964,19 +1195,38 @@ class AdvancedCardView: FrameLayout {
     // *
     // *
     // *
+    // Pressing Listener Area
+
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        return super.onInterceptTouchEvent(ev)
+    }
+
+    // Pressing Listener Area
+    // *
+    // *
+    // *
+
+    // *
+    // *
+    // *
     // Drawing Area
 
+    // Determine if we can draw background (base on background type)
     private fun canDrawBackground(): Boolean {
         return background_Type == BackgroundType.Fill || background_Type == BackgroundType.Fill_Stroke
     }
 
+    // Determine if we can draw stroke (base on background type)
     private fun canDrawStroke(): Boolean {
         return background_Type == BackgroundType.Stroke || background_Type == BackgroundType.Fill_Stroke
     }
 
+    // Determine if we can draw shadow for specific shadow:
     private fun canDrawShadow(shadow: ShadowObject): Boolean {
+        // If shadow type is outer, we check if we have room for drawing shadow:
         if(shadow.shadowType == ShadowType.Outer && getShadowOuterArea() == 0f)
             return false
+        // Checks if blur is not zero, and we have at least stroke or background:
         return shadow.blur != NOT_DEFINED_DIMEN && (canDrawStroke() || canDrawBackground())
     }
 
@@ -990,10 +1240,15 @@ class AdvancedCardView: FrameLayout {
         if(canDrawStroke()) {
             if(isDashed()) {
                 canvas?.save()
+                // If stroke is dashed,
+                // we use both stroke type drawing and masking
+                // for perfect drawing:
                 canvas?.clipPath(getStrokeMask())
                 canvas?.drawPath(getStrokePath(), getStrokePaint())
                 canvas?.restore()
             } else {
+                // If stroke is regular, we draw on background rectF,
+                // and cut out inner rectF, to create stroke effect:
                 canvas?.drawPath(getStrokeMask(), getStrokePaint())
             }
         }
@@ -1009,6 +1264,8 @@ class AdvancedCardView: FrameLayout {
     private fun drawShadows(canvas: Canvas?) {
         for(shadow in shadows)
             if(canDrawShadow(shadow)) {
+                // Init shadow styles,
+                // and save it in its shadow object:
                 initShadow(shadow)
                 drawShadow(canvas, shadow)
             }
@@ -1017,11 +1274,13 @@ class AdvancedCardView: FrameLayout {
     private fun drawDebugMode(canvas: Canvas?) {
         if(DEBUG_MODE) {
             initDebugFields()
-            canvas?.drawPath(DEBUG_path, DEBUG_paint_stroke)
+//            canvas?.drawPath(DEBUG_path, DEBUG_paint_stroke)
             DEBUG_path.reset()
-            var startPoint = getLinearGradientCircularStartPoint(background_Gradient_Angle)
-            var endPoint = getLinearGradientCircularStartPoint(background_Gradient_Angle + 180)
-            canvas?.drawLine(startPoint.first, startPoint.second, endPoint.first, endPoint.second, DEBUG_paint_stroke)
+            var startPoint = getLinearGradientCircularStartPoint(stroke_Gradient_Angle)
+            var endPoint = getLinearGradientCircularStartPoint(stroke_Gradient_Angle + 180)
+            canvas?.drawLine(startPoint.first, startPoint.second, (getActualWidth() / 2) + getShadowOuterArea(), (getActualHeight() / 2) + getShadowOuterArea(), DEBUG_paint_stroke)
+//            canvas?.drawPoint(startPoint.first, startPoint.second, DEBUG_paint_fill)
+            canvas?.drawCircle(startPoint.first, startPoint.second, 16f, DEBUG_paint_fill)
         }
     }
 

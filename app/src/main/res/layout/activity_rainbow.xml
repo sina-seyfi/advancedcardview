@@ -26,10 +26,14 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.4"
-        app:cornerRadius="8dp"
+        app:cornerRadius_TopLeft="48dp"
+        app:cornerRadius_TopRight="24dp"
+        app:cornerRadius_BottomRight="48dp"
+        app:cornerRadius_BottomLeft="24dp"
         app:background_Type="stroke"
         app:stroke_Width="2dp"
-        app:stroke_ColorType="gradient_sweep" />
+        app:stroke_ColorType="gradient_sweep"
+        app:shadow_Outer_Area="8dp"/>
     
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/rotate_it"

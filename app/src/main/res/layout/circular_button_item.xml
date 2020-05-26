@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.sinaseyfi.advancedcardview.AdvancedCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="80dp"
+    android:layout_height="80dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:shadow_Outer_Area="8dp"
+    app:background_Type="fill"
+    app:background_Color="#F0F5F7"
+    app:corner_Type="circular"
+    app:shadow0_Outer_Blur="4dp"
+    app:shadow0_Outer_Alpha="0.16"
+    app:shadow0_Outer_Angle="-45"
+    app:shadow0_Outer_Distance="4dp"
+    app:shadow0_Outer_Color="#2C4EB3"
+    app:shadow1_Outer_Blur="4dp"
+    app:shadow1_Outer_Alpha="1"
+    app:shadow1_Outer_Color="#FFFFFF"
+    app:shadow1_Outer_Distance="4dp"
+    app:shadow1_Outer_Angle="135"
+    android:id="@+id/button">
+    
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:textColor="#2C4EB3"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif"
+        android:layout_gravity="center"
+        android:gravity="center"/>
+
+</com.sinaseyfi.advancedcardview.AdvancedCardView>
